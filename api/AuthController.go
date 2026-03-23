@@ -23,5 +23,4 @@ func UserLogin(c *gin.Context) {
 		return
 	}
 	resp.Success(c, user.Login(userLoginVO))
-
 }
