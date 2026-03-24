@@ -52,3 +52,13 @@ func SelectMenuPermsByUserId(id uint64) (m []string) {
 		"where m.status = '0' and r.status = '0' and ur.user_id = ?", id).Find(&m)
 	return m
 }
+
+func SelectMenuListBy(menu *entity.SysMenu) (resp []*entity.SysMenu) {
+	config.DB.Find(menu).Find(&resp)
+	return resp
+}
+
+func SelectMenuListByUserId(menu *entity.SysMenu, userId uint64) (resp []*entity.SysMenu) {
+	config.DB.Where("user_id = ?", userId).Where(&menu).Find(&resp)
+	return resp
+}

@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"go_admin/config"
 	menuConst "go_admin/middleware/common"
 	"go_admin/model/RespVO/menu"
 	"go_admin/model/entity"
@@ -235,4 +236,77 @@ func SelectMenuPermsByUserId(id uint64) []string {
 		}
 	}
 	return permsSet
+}
+
+func SelectList(menu *entity.SysMenu, id uint64) []*entity.SysMenu {
+
+	var menuList []*entity.SysMenu
+	if id == 1 {
+		menuList = mRepository.SelectMenuListBy(menu)
+	} else {
+		menuList = mRepository.SelectMenuListByUserId(menu, id)
+	}
+	return menuList
+}
+
+func MenuInfo(id int) (resp *entity.SysMenu) {
+
+	config.DB.Where("id = ?", id).Take(&resp)
+	return resp
+}
+
+func BuildMenuTree(list []*entity.SysMenu) []*menu.MenuTreeSelect {
+	trees := buildTree(list) // 先构建树
+	result := make([]*menu.MenuTreeSelect, 0, len(trees))
+	for _, root := range trees {
+		result = append(result, toTreeSelect(root))
+	}
+	return result
+}
+
+func buildTree(list []*entity.SysMenu) []*entity.SysMenu {
+	// 1. 建立 id -> node 映射，并初始化 Children 切片（防止 nil）
+	nodeMap := make(map[int64]*entity.SysMenu)
+	for _, m := range list {
+		if m == nil {
+			continue
+		}
+		nodeMap[m.MenuId] = m
+		m.Children = []*entity.SysMenu{} // 清空原有子节点
+	}
+
+	var roots []*entity.SysMenu
+	// 2. 建立父子关系
+	for _, m := range list {
+		if m == nil {
+			continue
+		}
+		// 根节点条件：ParentId == 0（可根据实际业务调整）
+		if m.ParentId == 0 {
+			roots = append(roots, m)
+		} else {
+			if parent, ok := nodeMap[m.ParentId]; ok {
+				parent.Children = append(parent.Children, m)
+			} else {
+				// 父节点不存在，也作为根节点（兜底）
+				roots = append(roots, m)
+			}
+		}
+	}
+	return roots
+}
+
+func toTreeSelect(sysMenu *entity.SysMenu) *menu.MenuTreeSelect {
+	if sysMenu == nil {
+		return nil
+	}
+	ts := &menu.MenuTreeSelect{
+		ID:       sysMenu.MenuId,
+		Label:    sysMenu.MenuName,
+		Children: []*menu.MenuTreeSelect{},
+	}
+	for _, child := range sysMenu.Children {
+		ts.Children = append(ts.Children, toTreeSelect(child))
+	}
+	return ts
 }
