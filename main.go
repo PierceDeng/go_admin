@@ -26,5 +26,8 @@ func main() {
 	router.LoadRouter(noAuthGroup)
 	router.LoadAuthRouter(authGroup)
 
-	r.Run(":9999")
+	err := r.Run(":9999")
+	if err != nil {
+		return
+	}
 }
