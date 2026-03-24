@@ -14,12 +14,12 @@ import (
 )
 import resp "go_admin/model/respVO"
 
-func Login(vo req.UserLoginReqVO) resp.UserLoginRespVO {
+func Login(vo *req.UserLoginReqVO) *resp.UserLoginRespVO {
 
 	var sysUser entity.SysUser
-	result := config.DB.Where("user_name = ?", vo.Username).First(&sysUser)
+	result := config.DB.Where("user_name = ?", vo.Username).Take(&sysUser)
 
-	if result.Error != nil {
+	if result != nil && result.Error != nil {
 		panic(exception.NewBizException(common.BIZ_ERROR_CODE, "用户不存在"))
 	}
 
@@ -33,11 +33,25 @@ func Login(vo req.UserLoginReqVO) resp.UserLoginRespVO {
 	var token = uuid.New().String()
 	cache.SetSysToken(token, sysUser.UserId)
 
-	return resp.UserLoginRespVO{
+	return &resp.UserLoginRespVO{
 		Token: token,
 	}
 }
 
-func GetInfo() {
+func GetUserInfo(userId uint64) (respVO *resp.UserInfoRespVO) {
+
+	var sysUser entity.SysUser
+	result := config.DB.Where("user_id = ?", userId).Take(&sysUser)
+	if result != nil && result.Error != nil {
+		panic(exception.NewBizException(common.BIZ_ERROR_CODE, "用户不存在"))
+	}
+
+	return &resp.UserInfoRespVO{
+		User:               sysUser,
+		Roles:              []string{"*"},
+		Permissions:        []string{"*"},
+		IsDefaultModifyPwd: false,
+		IsPasswordExpired:  false,
+	}
 
 }

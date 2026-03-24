@@ -20,11 +20,7 @@ type SysUser struct {
 	LoginIp       string     `gorm:"column:login_ip;default:''" json:"loginIp"`   // 最后登录IP
 	LoginDate     *time.Time `gorm:"column:login_date" json:"loginDate"`          // 最后登录时间
 	PwdUpdateDate *time.Time `gorm:"column:pwd_update_date" json:"pwdUpdateDate"` // 密码最后更新时间
-	CreateBy      string     `gorm:"column:create_by;default:''" json:"createBy"` // 创建者
-	CreateTime    *time.Time `gorm:"column:create_time" json:"createTime"`        // 创建时间
-	UpdateBy      string     `gorm:"column:update_by;default:''" json:"updateBy"` // 更新者
-	UpdateTime    *time.Time `gorm:"column:update_time" json:"updateTime"`        // 更新时间
-	Remark        *string    `gorm:"column:remark" json:"remark"`
+	BaseEntity
 }
 
 func (SysUser) TableName() string {

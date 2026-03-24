@@ -1,12 +1,17 @@
 package router
 
 import (
-	auth "go_admin/api"
+	api "go_admin/api"
 
 	"github.com/gin-gonic/gin"
 )
 
-func LoadRouter(r *gin.Engine) {
+func LoadRouter(noAuthGroup *gin.RouterGroup) {
 
-	r.POST("/login", auth.UserLogin)
+	noAuthGroup.POST("/login", api.UserLogin)
+}
+
+func LoadAuthRouter(authGroup *gin.RouterGroup) {
+
+	authGroup.GET("/getInfo", api.GetUserInfo)
 }

@@ -7,14 +7,15 @@ import (
 )
 
 type Response struct {
-	Code int32       `json:"code"`
-	Msg  string      `json:"msg"`
-	Data interface{} `json:"data"`
+	Code int32  `json:"code"`
+	Msg  string `json:"msg"`
+	Data any    `json:"data"`
 }
 
-func Success(c *gin.Context, data interface{}) {
+func Ok(c *gin.Context, data any) {
 	c.JSON(http.StatusOK, Response{
 		Code: 200,
+		Msg:  "ok",
 		Data: data,
 	})
 }
@@ -23,6 +24,6 @@ func Fail(c *gin.Context, code int32, msg string) {
 	c.JSON(http.StatusOK, Response{
 		Code: code,
 		Msg:  msg,
-		Data: nil,
+		Data: gin.H{},
 	})
 }

@@ -15,7 +15,6 @@ func InitRedis() {
 	})
 
 	RedisTemplate = rdb
-
 }
 
 func CloseRedis() {
