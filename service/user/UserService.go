@@ -9,6 +9,7 @@ import (
 	"go_admin/middleware/exception"
 	"go_admin/model/entity"
 	req "go_admin/model/reqVO"
+	roleSerivce "go_admin/service/role"
 
 	"github.com/google/uuid"
 )
@@ -46,10 +47,13 @@ func GetUserInfo(userId uint64) (respVO *resp.UserInfoRespVO) {
 		panic(exception.NewBizException(common.BIZ_ERROR_CODE, "用户不存在"))
 	}
 
+	roles := roleSerivce.GetRolePermission(sysUser)
+	perms := roleSerivce.GetMenuPermission(sysUser)
+
 	return &resp.UserInfoRespVO{
 		User:               sysUser,
-		Roles:              []string{"*"},
-		Permissions:        []string{"*"},
+		Roles:              roles,
+		Permissions:        perms,
 		IsDefaultModifyPwd: false,
 		IsPasswordExpired:  false,
 	}

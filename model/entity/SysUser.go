@@ -6,7 +6,7 @@ import (
 
 type SysUser struct {
 	UserId        uint64     `gorm:"column:user_id;primaryKey;" json:"userId"`
-	DeptId        *int64     `gorm:"column:dept_id;" json:"deptId"`
+	DeptId        int64      `gorm:"column:dept_id;" json:"deptId"`
 	Username      string     `gorm:"column:username;not null;" json:"username"`
 	Nickname      string     `gorm:"column:nickname;default:'00'" json:"nickname"`
 	UserType      string     `gorm:"column:user_type" json:"userType"`

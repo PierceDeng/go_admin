@@ -9,9 +9,11 @@ import (
 func LoadRouter(noAuthGroup *gin.RouterGroup) {
 
 	noAuthGroup.POST("/login", api.UserLogin)
+	noAuthGroup.POST("/logout", api.Logout)
 }
 
 func LoadAuthRouter(authGroup *gin.RouterGroup) {
 
 	authGroup.GET("/getInfo", api.GetUserInfo)
+	authGroup.GET("/getRouters", api.GetRouters)
 }
