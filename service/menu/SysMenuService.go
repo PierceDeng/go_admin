@@ -21,16 +21,21 @@ func BuildMenus(menus []*entity.SysMenu) []*menu.RouterVO {
 		router.Path = getRouterPath(*item)
 		router.Component = getComponent(*item)
 		router.Query = item.Query
-		router.Meta = &menu.MetaVo{
+		var link string
+		if utils.StartsWithAny(item.Path, utils.HTTP, utils.HTTPS) {
+			link = item.Path
+		}
+		routerMeta := menu.MetaVo{
 			Title:   item.MenuName,
 			Icon:    item.Icon,
 			NoCache: "1" == item.IsCache,
-			Link:    item.Path,
+			Link:    link,
 		}
+		router.Meta = &routerMeta
 		children := item.Children
 		if len(children) > 0 && menuConst.TYPE_DIR == item.MenuType {
 			router.AlwaysShow = new(true)
-			router.Redirect = "NoRedirect"
+			router.Redirect = "noRedirect"
 			router.Children = BuildMenus(children)
 		} else if isMenuFrame(*item) {
 			router.Meta = nil
@@ -39,12 +44,16 @@ func BuildMenus(menus []*entity.SysMenu) []*menu.RouterVO {
 			child.Path = item.Path
 			child.Component = item.Component
 			child.Name = getRouteNameStr(item.RouteName, item.Path)
-			child.Meta = &menu.MetaVo{
-				Title:   item.MenuName,
-				Icon:    item.Icon,
-				NoCache: "1" == item.IsCache,
-				Link:    item.Path,
+			var childLink string
+			if utils.StartsWithAny(item.Path, utils.HTTP, utils.HTTPS) {
+				childLink = item.Path
 			}
+			childMeta := menu.MetaVo{
+				Title: item.MenuName,
+				Icon:  item.Icon,
+				Link:  childLink,
+			}
+			child.Meta = &childMeta
 			child.Query = item.Query
 			childrenList = append(childrenList, &child)
 			router.Children = childrenList
@@ -55,18 +64,22 @@ func BuildMenus(menus []*entity.SysMenu) []*menu.RouterVO {
 				Icon:  item.Icon,
 			}
 			router.Path = "/"
+			var childLink string
+			if utils.StartsWithAny(item.Path, utils.HTTP, utils.HTTPS) {
+				childLink = item.Path
+			}
 
 			var childrenList []*menu.RouterVO
 			var child menu.RouterVO
-			child.Path = item.Path
+			child.Path = innerLinkReplaceEach(item.Path)
 			child.Component = item.Component
 			child.Name = getRouteNameStr(item.RouteName, item.Path)
-			child.Meta = &menu.MetaVo{
-				Title:   item.MenuName,
-				Icon:    item.Icon,
-				NoCache: "1" == item.IsCache,
-				Link:    item.Path,
+			childMeta := menu.MetaVo{
+				Title: item.MenuName,
+				Icon:  item.Icon,
+				Link:  childLink,
 			}
+			child.Meta = &childMeta
 			child.Query = item.Query
 			childrenList = append(childrenList, &child)
 			router.Children = childrenList
@@ -161,10 +174,12 @@ func getRouteName(sysMenu entity.SysMenu) string {
 }
 
 func getRouteNameStr(name string, path string) string {
+	var routerName string
 	if name != "" {
-		return name
+		routerName = name
 	}
-	return path
+	routerName = path
+	return utils.Capitalize(routerName)
 }
 
 func isMenuFrame(sysMenu entity.SysMenu) bool {
@@ -176,12 +191,12 @@ func getRouterPath(sysMenu entity.SysMenu) string {
 
 	routerPath := sysMenu.Path
 	if sysMenu.ParentId != MENU_ROOT_ID && isInnerLink(sysMenu) {
-		routerPath = innerLinkReplaceEach(&routerPath)
-		if MENU_ROOT_ID == sysMenu.ParentId && menuConst.TYPE_DIR == sysMenu.MenuType && menuConst.NO_FRAME == sysMenu.IsFrame {
-			routerPath = "/" + routerPath
-		} else if isMenuFrame(sysMenu) {
-			routerPath = "/"
-		}
+		routerPath = innerLinkReplaceEach(routerPath)
+	}
+	if MENU_ROOT_ID == sysMenu.ParentId && menuConst.TYPE_DIR == sysMenu.MenuType && menuConst.NO_FRAME == sysMenu.IsFrame {
+		routerPath = "/" + routerPath
+	} else if isMenuFrame(sysMenu) {
+		routerPath = "/"
 	}
 	return routerPath
 }
@@ -191,8 +206,8 @@ func isInnerLink(sysMenu entity.SysMenu) bool {
 	return sysMenu.IsFrame == menuConst.NO_FRAME && strings.Contains(sysMenu.Path, "http")
 }
 
-func innerLinkReplaceEach(path *string) string {
-	return strings.ReplaceAll(*path, "http|https|www", "")
+func innerLinkReplaceEach(path string) string {
+	return strings.ReplaceAll(path, "http|https|www", "")
 }
 
 func SelectMenuPermsByRoleId(roleId int64) []string {

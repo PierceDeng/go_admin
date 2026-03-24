@@ -15,8 +15,8 @@ type RouterVO struct {
 
 // MetaVo 路由元信息
 type MetaVo struct {
-	Title   string `json:"title"`             // 菜单标题
-	Icon    string `json:"icon"`              // 菜单图标
-	NoCache bool   `json:"noCache,omitempty"` // 是否缓存
-	Link    string `json:"link,omitempty"`    // 外链地址
+	Title   string `json:"title"`          // 菜单标题
+	Icon    string `json:"icon"`           // 菜单图标
+	NoCache bool   `json:"noCache"`        // 是否缓存
+	Link    string `json:"link,omitempty"` // 外链地址
 }
