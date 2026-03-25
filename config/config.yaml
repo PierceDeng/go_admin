@@ -1,0 +1,13 @@
+
+
+server:
+  port: 9999
+db:
+  driver: mysql
+  dsn: xxx:xxx@tcp(127.0.0.1:3306)/xxx?charset=utf8mb4&parseTime=True&loc=Local
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password:
+  db: 0

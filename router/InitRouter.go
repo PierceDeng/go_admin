@@ -21,5 +21,7 @@ func LoadAuthRouter(authGroup *gin.RouterGroup) {
 	authGroup.DELETE("/system/menu/:id", api.MenuDel)
 	authGroup.GET("/system/menu/tree", api.MenuTreeSelect)
 	authGroup.GET("/system/dict/data/type/:type", api.GetDictDateInfo)
+	authGroup.GET("/system/user/deptTree", api.GetDeptTree)
+	authGroup.GET("/system/user/list", api.GetUserList)
 
 }

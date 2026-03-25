@@ -7,8 +7,12 @@ import (
 	"go_admin/middleware/cache"
 	"go_admin/middleware/common"
 	"go_admin/middleware/exception"
+	"go_admin/model/RespVO/menu"
 	"go_admin/model/entity"
 	req "go_admin/model/reqVO"
+	"go_admin/model/reqVO/user"
+	"go_admin/repository/dept"
+	userRepository "go_admin/repository/user"
 	roleSerivce "go_admin/service/role"
 
 	"github.com/google/uuid"
@@ -58,4 +62,76 @@ func GetUserInfo(userId uint64) (respVO *resp.UserInfoRespVO) {
 		IsPasswordExpired:  false,
 	}
 
+}
+
+func GetDeptTree(sysDept *entity.SysDept) []*menu.MenuTreeSelect {
+
+	deptList := dept.SelectDeptList(sysDept)
+	return BuildDeptTree(deptList)
+}
+
+func BuildDeptTree(list []*entity.SysDept) []*menu.MenuTreeSelect {
+	trees := buildTree(list) // 先构建树
+	result := make([]*menu.MenuTreeSelect, 0, len(trees))
+	for _, root := range trees {
+		result = append(result, toTreeSelect(root))
+	}
+	return result
+}
+
+func buildTree(list []*entity.SysDept) []*entity.SysDept {
+	// 1. 建立 id -> node 映射，并初始化 Children 切片（防止 nil）
+	nodeMap := make(map[int64]*entity.SysDept)
+	for _, d := range list {
+		if d == nil {
+			continue
+		}
+		nodeMap[d.DeptId] = d
+		d.Children = []*entity.SysDept{} // 清空原有子节点
+	}
+
+	var roots []*entity.SysDept
+	// 2. 建立父子关系
+	for _, m := range list {
+		if m == nil {
+			continue
+		}
+		// 根节点条件：ParentId == 0（可根据实际业务调整）
+		if m.ParentId == 0 {
+			roots = append(roots, m)
+		} else {
+			if parent, ok := nodeMap[m.ParentId]; ok {
+				parent.Children = append(parent.Children, m)
+			} else {
+				// 父节点不存在，也作为根节点（兜底）
+				roots = append(roots, m)
+			}
+		}
+	}
+	return roots
+}
+
+func toTreeSelect(sysDept *entity.SysDept) *menu.MenuTreeSelect {
+	if sysDept == nil {
+		return nil
+	}
+	ts := &menu.MenuTreeSelect{
+		ID:       sysDept.DeptId,
+		Label:    sysDept.DeptName,
+		Children: []*menu.MenuTreeSelect{},
+	}
+	for _, child := range sysDept.Children {
+		ts.Children = append(ts.Children, toTreeSelect(child))
+	}
+	return ts
+}
+
+func GetUserList(vo *user.SysUserReqVO) resp.PageResp[entity.SysUser] {
+
+	var r resp.PageResp[entity.SysUser]
+	userList, total, _ := userRepository.QueryUserList(*vo)
+	r.Rows = userList
+	r.Total = total
+	r.Code = 200
+	return r
 }

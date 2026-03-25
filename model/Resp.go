@@ -20,6 +20,10 @@ func Ok(c *gin.Context, data any) {
 	})
 }
 
+func OkWithWrapper(c *gin.Context, wrapper any) {
+	c.JSON(http.StatusOK, wrapper)
+}
+
 func Fail(c *gin.Context, code int32, msg string) {
 	c.JSON(http.StatusOK, Response{
 		Code: code,
