@@ -22,6 +22,8 @@ func AuthFilter() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusOK, model.Response{Code: 9997, Msg: "请重新登录"})
 			return
 		}
+
+		cache.RefreshToken(token)
 		c.Set("userId", userId)
 		c.Next()
 	}

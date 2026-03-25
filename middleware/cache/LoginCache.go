@@ -16,3 +16,9 @@ func GetSysToken(token string) uint64 {
 	userId, _ := config.RedisTemplate.Get(context.Background(), tokenKey).Uint64()
 	return userId
 }
+
+func RefreshToken(token string) {
+	tokenKey := "system:user:login:" + token
+	config.RedisTemplate.Expire(context.Background(), tokenKey, 60*time.Minute)
+
+}
