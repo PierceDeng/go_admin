@@ -54,7 +54,7 @@ func SelectMenuPermsByUserId(id uint64) (m []string) {
 }
 
 func SelectMenuListBy(menu *entity.SysMenu) (resp []*entity.SysMenu) {
-	config.DB.Find(menu).Find(&resp)
+	config.DB.Where(menu).Find(&resp)
 	return resp
 }
 

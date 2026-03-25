@@ -15,3 +15,12 @@ func BindJSON[T any](c *gin.Context) *T {
 	}
 	return &req
 }
+
+func BindQuery[T any](c *gin.Context) *T {
+	var req T
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusOK, resp.Response{Code: 10001, Msg: "参数格式错误", Data: gin.H{}})
+		return nil
+	}
+	return &req
+}

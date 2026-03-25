@@ -310,3 +310,9 @@ func toTreeSelect(sysMenu *entity.SysMenu) *menu.MenuTreeSelect {
 	}
 	return ts
 }
+
+func MenuDel(id int) int {
+
+	config.DB.Where("menu_id = ?", id).Delete(&entity.SysMenu{})
+	return id
+}
