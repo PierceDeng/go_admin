@@ -26,9 +26,6 @@ func main() {
 	config.InitDB()
 	config.InitRedis()
 
-	defer config.CloseDB()
-	defer config.CloseRedis()
-
 	r := gin.Default()
 	r.Use(exception.ExceptionHandler())
 

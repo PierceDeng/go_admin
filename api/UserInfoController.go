@@ -10,17 +10,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetUserInfo(c *gin.Context) {
+type userController struct {
+	UserService *userSerivce.UserService
+}
+
+var UserController = userController{
+	UserService: userSerivce.NewUserService(),
+}
+
+func (u userController) GetUserInfo(c *gin.Context) {
 	userId, _ := c.Get("userId")
-	resp.Ok(c, userSerivce.GetUserInfo(userId.(uint64)))
+	resp.Ok(c, u.UserService.GetUserInfo(userId.(uint64)))
 }
 
-func GetDeptTree(c *gin.Context) {
-	dept := common.BindQuery[entity.SysDept](c)
-	resp.Ok(c, userSerivce.GetDeptTree(dept))
+func (u userController) GetDeptTree(c *gin.Context) {
+	dept, err := common.BindQuery[entity.SysDept](c)
+	if err != nil {
+		return
+	}
+	resp.Ok(c, u.UserService.GetDeptTree(dept))
 }
 
-func GetUserList(c *gin.Context) {
-	userReqVO := common.BindQuery[user.SysUserReqVO](c)
-	resp.OkWithWrapper(c, userSerivce.GetUserList(userReqVO))
+func (u userController) GetUserList(c *gin.Context) {
+	userReqVO, err := common.BindQuery[user.SysUserReqVO](c)
+	if err != nil {
+		return
+	}
+	resp.OkWithWrapper(c, u.UserService.GetUserList(userReqVO))
 }

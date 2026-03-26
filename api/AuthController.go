@@ -1,28 +1,42 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	"go_admin/middleware/common"
 	resp "go_admin/model"
 	"go_admin/model/reqVO"
-	menuService "go_admin/service/menu"
+	"go_admin/service/menu"
 	"go_admin/service/user"
+
+	"github.com/gin-gonic/gin"
 )
 
-func UserLogin(c *gin.Context) {
-	userLoginVO := common.BindJSON[reqVO.UserLoginReqVO](c)
-	resp.Ok(c, user.Login(userLoginVO))
+type authController struct {
+	*user.UserService
+	*menu.MenuService
 }
 
-func Logout(c *gin.Context) {
+var AuthController = authController{
+	UserService: user.NewUserService(),
+	MenuService: menu.NewMenuService(),
+}
+
+func (a authController) UserLogin(c *gin.Context) {
+	userLoginVO, err := common.BindJSON[reqVO.UserLoginReqVO](c)
+	if err != nil {
+		return
+	}
+	resp.Ok(c, a.UserService.Login(userLoginVO))
+}
+
+func (a authController) Logout(c *gin.Context) {
 	resp.Ok(c, "")
 }
 
-func GetRouters(c *gin.Context) {
+func (a authController) GetRouters(c *gin.Context) {
 
 	userId, _ := c.Get("userId")
-	menus := menuService.SelectMenuTreeByUserId(userId.(uint64))
-	routerVOs := menuService.BuildMenus(menus)
+	menus := a.MenuService.SelectMenuTreeByUserId(userId.(uint64))
+	routerVOs := a.MenuService.BuildMenus(menus)
 	resp.Ok(c, routerVOs)
 
 }

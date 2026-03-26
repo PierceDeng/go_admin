@@ -7,20 +7,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func BindJSON[T any](c *gin.Context) *T {
+func BindJSON[T any](c *gin.Context) (*T, error) {
 	var req T
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusOK, resp.Response{Code: 10001, Msg: "参数格式错误", Data: gin.H{}})
-		return nil
+		return nil, err
 	}
-	return &req
+	return &req, nil
 }
 
-func BindQuery[T any](c *gin.Context) *T {
+func BindQuery[T any](c *gin.Context) (*T, error) {
 	var req T
 	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusOK, resp.Response{Code: 10001, Msg: "参数格式错误", Data: gin.H{}})
-		return nil
+		return nil, err
 	}
-	return &req
+	return &req, nil
 }

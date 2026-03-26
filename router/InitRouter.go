@@ -8,20 +8,20 @@ import (
 
 func LoadRouter(noAuthGroup *gin.RouterGroup) {
 
-	noAuthGroup.POST("/login", api.UserLogin)
-	noAuthGroup.POST("/logout", api.Logout)
+	noAuthGroup.POST("/login", api.AuthController.UserLogin)
+	noAuthGroup.POST("/logout", api.AuthController.Logout)
 }
 
 func LoadAuthRouter(authGroup *gin.RouterGroup) {
 
-	authGroup.GET("/getInfo", api.GetUserInfo)
-	authGroup.GET("/getRouters", api.GetRouters)
-	authGroup.GET("/system/menu/list", api.GetMenuList)
-	authGroup.GET("/system/menu/:id", api.MenuInfo)
-	authGroup.DELETE("/system/menu/:id", api.MenuDel)
-	authGroup.GET("/system/menu/tree", api.MenuTreeSelect)
-	authGroup.GET("/system/dict/data/type/:type", api.GetDictDateInfo)
-	authGroup.GET("/system/user/deptTree", api.GetDeptTree)
-	authGroup.GET("/system/user/list", api.GetUserList)
+	authGroup.GET("/getInfo", api.UserController.GetUserInfo)
+	authGroup.GET("/system/user/deptTree", api.UserController.GetDeptTree)
+	authGroup.GET("/system/user/list", api.UserController.GetUserList)
+	authGroup.GET("/getRouters", api.AuthController.GetRouters)
+	authGroup.GET("/system/menu/list", api.MenuController.GetMenuList)
+	authGroup.GET("/system/menu/:id", api.MenuController.MenuInfo)
+	authGroup.DELETE("/system/menu/:id", api.MenuController.MenuDel)
+	authGroup.GET("/system/menu/tree", api.MenuController.MenuTreeSelect)
+	authGroup.GET("/system/dict/data/type/:type", api.SysDictController.GetDictDateInfo)
 
 }

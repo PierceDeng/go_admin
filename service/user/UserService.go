@@ -19,7 +19,13 @@ import (
 )
 import resp "go_admin/model/respVO"
 
-func Login(vo *req.UserLoginReqVO) *resp.UserLoginRespVO {
+type UserService struct{}
+
+func NewUserService() *UserService {
+	return &UserService{}
+}
+
+func (UserService) Login(vo *req.UserLoginReqVO) *resp.UserLoginRespVO {
 
 	var sysUser entity.SysUser
 	result := config.DB.Where("user_name = ?", vo.Username).Take(&sysUser)
@@ -43,7 +49,7 @@ func Login(vo *req.UserLoginReqVO) *resp.UserLoginRespVO {
 	}
 }
 
-func GetUserInfo(userId uint64) (respVO *resp.UserInfoRespVO) {
+func (UserService) GetUserInfo(userId uint64) (respVO *resp.UserInfoRespVO) {
 
 	var sysUser entity.SysUser
 	result := config.DB.Where("user_id = ?", userId).Take(&sysUser)
@@ -64,22 +70,22 @@ func GetUserInfo(userId uint64) (respVO *resp.UserInfoRespVO) {
 
 }
 
-func GetDeptTree(sysDept *entity.SysDept) []*menu.MenuTreeSelect {
+func (u UserService) GetDeptTree(sysDept *entity.SysDept) []*menu.MenuTreeSelect {
 
 	deptList := dept.SelectDeptList(sysDept)
-	return BuildDeptTree(deptList)
+	return u.BuildDeptTree(deptList)
 }
 
-func BuildDeptTree(list []*entity.SysDept) []*menu.MenuTreeSelect {
-	trees := buildTree(list) // 先构建树
+func (u UserService) BuildDeptTree(list []*entity.SysDept) []*menu.MenuTreeSelect {
+	trees := u.buildTree(list) // 先构建树
 	result := make([]*menu.MenuTreeSelect, 0, len(trees))
 	for _, root := range trees {
-		result = append(result, toTreeSelect(root))
+		result = append(result, u.toTreeSelect(root))
 	}
 	return result
 }
 
-func buildTree(list []*entity.SysDept) []*entity.SysDept {
+func (UserService) buildTree(list []*entity.SysDept) []*entity.SysDept {
 	// 1. 建立 id -> node 映射，并初始化 Children 切片（防止 nil）
 	nodeMap := make(map[int64]*entity.SysDept)
 	for _, d := range list {
@@ -111,7 +117,7 @@ func buildTree(list []*entity.SysDept) []*entity.SysDept {
 	return roots
 }
 
-func toTreeSelect(sysDept *entity.SysDept) *menu.MenuTreeSelect {
+func (u UserService) toTreeSelect(sysDept *entity.SysDept) *menu.MenuTreeSelect {
 	if sysDept == nil {
 		return nil
 	}
@@ -121,12 +127,12 @@ func toTreeSelect(sysDept *entity.SysDept) *menu.MenuTreeSelect {
 		Children: []*menu.MenuTreeSelect{},
 	}
 	for _, child := range sysDept.Children {
-		ts.Children = append(ts.Children, toTreeSelect(child))
+		ts.Children = append(ts.Children, u.toTreeSelect(child))
 	}
 	return ts
 }
 
-func GetUserList(vo *user.SysUserReqVO) resp.PageResp[entity.SysUser] {
+func (u UserService) GetUserList(vo *user.SysUserReqVO) resp.PageResp[entity.SysUser] {
 
 	var r resp.PageResp[entity.SysUser]
 	userList, total, _ := userRepository.QueryUserList(*vo)

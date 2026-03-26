@@ -12,7 +12,13 @@ import (
 
 const MENU_ROOT_ID = 0
 
-func BuildMenus(menus []*entity.SysMenu) []*menu.RouterVO {
+type MenuService struct{}
+
+func NewMenuService() *MenuService {
+	return &MenuService{}
+}
+
+func (tis MenuService) BuildMenus(menus []*entity.SysMenu) []*menu.RouterVO {
 
 	var m []*menu.RouterVO
 	for _, item := range menus {
@@ -37,7 +43,7 @@ func BuildMenus(menus []*entity.SysMenu) []*menu.RouterVO {
 		if len(children) > 0 && menuConst.TYPE_DIR == item.MenuType {
 			router.AlwaysShow = new(true)
 			router.Redirect = "noRedirect"
-			router.Children = BuildMenus(children)
+			router.Children = tis.BuildMenus(children)
 		} else if isMenuFrame(*item) {
 			router.Meta = nil
 			var childrenList []*menu.RouterVO
@@ -110,9 +116,9 @@ func isParentView(sysMenu entity.SysMenu) bool {
 	return sysMenu.ParentId != MENU_ROOT_ID && menuConst.TYPE_DIR == sysMenu.MenuType
 }
 
-func SelectMenuTreeByUserId(userId uint64) (menus []*entity.SysMenu) {
+func (tis MenuService) SelectMenuTreeByUserId(userId uint64) (menus []*entity.SysMenu) {
 
-	if IsAdmin(userId) {
+	if isAdmin(userId) {
 		menus = mRepository.SelectMenuTreeAll()
 	} else {
 		menus = mRepository.SelectMenuTreeByUserId(userId)
@@ -120,7 +126,7 @@ func SelectMenuTreeByUserId(userId uint64) (menus []*entity.SysMenu) {
 	return getChildPerms(menus, MENU_ROOT_ID)
 }
 
-func IsAdmin(userId uint64) bool {
+func isAdmin(userId uint64) bool {
 	return 1 == userId
 }
 
@@ -225,7 +231,7 @@ func SelectMenuPermsByRoleId(roleId int64) []string {
 	return menusSet
 }
 
-func SelectMenuPermsByUserId(id uint64) []string {
+func (tis MenuService) SelectMenuPermsByUserId(id uint64) []string {
 	perms := mRepository.SelectMenuPermsByUserId(id)
 	perms = utils.UniqueStrings(perms)
 
@@ -238,7 +244,7 @@ func SelectMenuPermsByUserId(id uint64) []string {
 	return permsSet
 }
 
-func SelectList(menu *entity.SysMenu, id uint64) []*entity.SysMenu {
+func (tis MenuService) SelectList(menu *entity.SysMenu, id uint64) []*entity.SysMenu {
 
 	var menuList []*entity.SysMenu
 	if id == 1 {
@@ -249,13 +255,13 @@ func SelectList(menu *entity.SysMenu, id uint64) []*entity.SysMenu {
 	return menuList
 }
 
-func MenuInfo(id int) (resp *entity.SysMenu) {
+func (tis MenuService) MenuInfo(id int) (resp *entity.SysMenu) {
 
 	config.DB.Where("id = ?", id).Take(&resp)
 	return resp
 }
 
-func BuildMenuTree(list []*entity.SysMenu) []*menu.MenuTreeSelect {
+func (tis MenuService) BuildMenuTree(list []*entity.SysMenu) []*menu.MenuTreeSelect {
 	trees := buildTree(list) // 先构建树
 	result := make([]*menu.MenuTreeSelect, 0, len(trees))
 	for _, root := range trees {
@@ -311,7 +317,7 @@ func toTreeSelect(sysMenu *entity.SysMenu) *menu.MenuTreeSelect {
 	return ts
 }
 
-func MenuDel(id int) int {
+func (tis MenuService) MenuDel(id int) int {
 
 	config.DB.Where("menu_id = ?", id).Delete(&entity.SysMenu{})
 	return id

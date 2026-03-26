@@ -4,33 +4,47 @@ import (
 	"go_admin/middleware/common"
 	resp "go_admin/model"
 	"go_admin/model/entity"
-	menuService "go_admin/service/menu"
+	"go_admin/service/menu"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetMenuList(c *gin.Context) {
+type menuController struct {
+	*menu.MenuService
+}
+
+var MenuController = menuController{
+	MenuService: menu.NewMenuService(),
+}
+
+func (tis menuController) GetMenuList(c *gin.Context) {
 
 	userId, _ := c.Get("userId")
-	menu := common.BindQuery[entity.SysMenu](c)
-	menuList := menuService.SelectList(menu, userId.(uint64))
+	menu, err := common.BindQuery[entity.SysMenu](c)
+	if err != nil {
+		return
+	}
+	menuList := tis.MenuService.SelectList(menu, userId.(uint64))
 	resp.Ok(c, menuList)
 }
 
-func MenuInfo(c *gin.Context) {
+func (tis menuController) MenuInfo(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	resp.Ok(c, menuService.MenuInfo(id))
+	resp.Ok(c, tis.MenuService.MenuInfo(id))
 }
 
-func MenuTreeSelect(c *gin.Context) {
+func (tis menuController) MenuTreeSelect(c *gin.Context) {
 	userId, _ := c.Get("userId")
-	menu := common.BindJSON[entity.SysMenu](c)
-	menuList := menuService.SelectList(menu, userId.(uint64))
-	resp.Ok(c, menuService.BuildMenuTree(menuList))
+	menu, err := common.BindJSON[entity.SysMenu](c)
+	if err != nil {
+		return
+	}
+	menuList := tis.MenuService.SelectList(menu, userId.(uint64))
+	resp.Ok(c, tis.MenuService.BuildMenuTree(menuList))
 }
 
-func MenuDel(c *gin.Context) {
+func (tis menuController) MenuDel(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	resp.Ok(c, menuService.MenuDel(id))
+	resp.Ok(c, tis.MenuService.MenuDel(id))
 }
