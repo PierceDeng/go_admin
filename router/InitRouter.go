@@ -17,6 +17,8 @@ func LoadAuthRouter(authGroup *gin.RouterGroup) {
 	authGroup.GET("/getInfo", api.UserController.GetUserInfo)
 	authGroup.GET("/system/user/deptTree", api.UserController.GetDeptTree)
 	authGroup.GET("/system/user/list", api.UserController.GetUserList)
+	authGroup.PUT("/system/user/changeStatus", api.UserController.ChangeUserStatus)
+	authGroup.GET("/system/user/:userId", api.UserController.QueryUser)
 	authGroup.GET("/getRouters", api.AuthController.GetRouters)
 	authGroup.GET("/system/menu/list", api.MenuController.GetMenuList)
 	authGroup.GET("/system/menu/:id", api.MenuController.MenuInfo)

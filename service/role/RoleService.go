@@ -6,7 +6,7 @@ import (
 	"go_admin/middleware/exception"
 	"go_admin/model/entity"
 	roleRepository "go_admin/repository/role"
-	menuService "go_admin/service/menu"
+	"go_admin/service/menu"
 	"go_admin/utils"
 	"strings"
 )
@@ -14,7 +14,17 @@ import (
 const SUPER_ADMIN = "admin"
 const ALL_PERMISSION = "*:*:*"
 
-func GetRolePermission(user entity.SysUser) []string {
+type RoleService struct {
+	*menu.MenuService
+}
+
+func NewRoleService() *RoleService {
+	return &RoleService{
+		MenuService: menu.NewMenuService(),
+	}
+}
+
+func (r RoleService) GetRolePermission(user entity.SysUser) []string {
 
 	var roles []string
 	if user.UserId == 1 {
@@ -26,7 +36,7 @@ func GetRolePermission(user entity.SysUser) []string {
 	return roles
 }
 
-func GetMenuPermission(user entity.SysUser) []string {
+func (r RoleService) GetMenuPermission(user entity.SysUser) []string {
 
 	var permissions []string
 	if user.UserId == 1 {
@@ -42,13 +52,13 @@ func GetMenuPermission(user entity.SysUser) []string {
 		if len(roles) > 0 {
 			for _, role := range roles {
 				if role.Status == "0" && role.IsAdmin() {
-					var rolePerms = menuService.SelectMenuPermsByRoleId(role.RoleId)
+					var rolePerms = r.MenuService.SelectMenuPermsByRoleId(role.RoleId)
 					role.Permissions = append(role.Permissions, rolePerms...)
 					permissions = append(permissions, role.Permissions...)
 				}
 			}
 		} else {
-			rolePerms := menuService.SelectMenuPermsByUserId(user.UserId)
+			rolePerms := r.MenuService.SelectMenuPermsByUserId(user.UserId)
 			rolePerms = utils.UniqueStrings(rolePerms)
 			permissions = append(permissions, rolePerms...)
 		}

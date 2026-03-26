@@ -6,6 +6,7 @@ import (
 	"go_admin/model/entity"
 	"go_admin/model/reqVO/user"
 	userSerivce "go_admin/service/user"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,4 +38,18 @@ func (u userController) GetUserList(c *gin.Context) {
 		return
 	}
 	resp.OkWithWrapper(c, u.UserService.GetUserList(userReqVO))
+}
+
+func (u userController) ChangeUserStatus(c *gin.Context) {
+	reqVO, err := common.BindJSON[user.ChangeUserStatusReqVo](c)
+	if err != nil {
+		return
+	}
+	resp.Ok(c, u.UserService.ChangeUserStatus(reqVO))
+}
+
+func (u userController) QueryUser(c *gin.Context) {
+
+	userId, _ := strconv.Atoi(c.Param("userId"))
+	resp.Ok(c, u.UserService.QueryUser(userId))
 }

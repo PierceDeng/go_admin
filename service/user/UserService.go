@@ -13,16 +13,20 @@ import (
 	"go_admin/model/reqVO/user"
 	"go_admin/repository/dept"
 	userRepository "go_admin/repository/user"
-	roleSerivce "go_admin/service/role"
+	"go_admin/service/role"
 
 	"github.com/google/uuid"
 )
 import resp "go_admin/model/respVO"
 
-type UserService struct{}
+type UserService struct {
+	*role.RoleService
+}
 
 func NewUserService() *UserService {
-	return &UserService{}
+	return &UserService{
+		RoleService: role.NewRoleService(),
+	}
 }
 
 func (UserService) Login(vo *req.UserLoginReqVO) *resp.UserLoginRespVO {
@@ -49,7 +53,7 @@ func (UserService) Login(vo *req.UserLoginReqVO) *resp.UserLoginRespVO {
 	}
 }
 
-func (UserService) GetUserInfo(userId uint64) (respVO *resp.UserInfoRespVO) {
+func (tis UserService) GetUserInfo(userId uint64) (respVO *resp.UserInfoRespVO) {
 
 	var sysUser entity.SysUser
 	result := config.DB.Where("user_id = ?", userId).Take(&sysUser)
@@ -57,8 +61,8 @@ func (UserService) GetUserInfo(userId uint64) (respVO *resp.UserInfoRespVO) {
 		panic(exception.NewBizException(common.BIZ_ERROR_CODE, "用户不存在"))
 	}
 
-	roles := roleSerivce.GetRolePermission(sysUser)
-	perms := roleSerivce.GetMenuPermission(sysUser)
+	roles := tis.RoleService.GetRolePermission(sysUser)
+	perms := tis.RoleService.GetMenuPermission(sysUser)
 
 	return &resp.UserInfoRespVO{
 		User:               sysUser,
@@ -140,4 +144,17 @@ func (u UserService) GetUserList(vo *user.SysUserReqVO) resp.PageResp[entity.Sys
 	r.Total = total
 	r.Code = 200
 	return r
+}
+
+func (tis UserService) ChangeUserStatus(vo *user.ChangeUserStatusReqVo) uint64 {
+
+	config.DB.Model(&entity.SysUser{}).Where("user_id = ?", vo.UserId).UpdateColumn("status", vo.Status)
+	return vo.UserId
+}
+
+func (tis UserService) QueryUser(id int) *entity.SysUser {
+
+	var sysUser *entity.SysUser
+	config.DB.Where("user_id = ?", id).First(&sysUser)
+	return sysUser
 }

@@ -217,7 +217,7 @@ func innerLinkReplaceEach(path string) string {
 	return strings.ReplaceAll(path, "http|https|www", "")
 }
 
-func SelectMenuPermsByRoleId(roleId int64) []string {
+func (tis MenuService) SelectMenuPermsByRoleId(roleId int64) []string {
 
 	menus := mRepository.SelectMenuPermsByRoleId(roleId)
 	menus = utils.UniqueStrings(menus)

@@ -12,7 +12,7 @@ var DB *gorm.DB
 
 func InitDB() {
 
-	dsn := viper.GetString("db.dsn")
+	dsn := viper.GetString("database.dsn")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("failed to connect database:", err)
