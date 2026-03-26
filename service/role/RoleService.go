@@ -9,6 +9,8 @@ import (
 	"go_admin/service/menu"
 	"go_admin/utils"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 const SUPER_ADMIN = "admin"
@@ -65,6 +67,12 @@ func (r RoleService) GetMenuPermission(user entity.SysUser) []string {
 	}
 
 	return permissions
+
+}
+
+func (r RoleService) DelUserRole(db *gorm.DB, id int) {
+
+	db.Model(&entity.SysUserRole{}).Where("user_id = ?", id).Delete(&entity.SysUserRole{})
 
 }
 

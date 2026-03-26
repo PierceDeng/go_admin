@@ -53,3 +53,10 @@ func (u userController) QueryUser(c *gin.Context) {
 	userId, _ := strconv.Atoi(c.Param("userId"))
 	resp.Ok(c, u.UserService.QueryUser(userId))
 }
+
+func (u userController) UpdateUser(c *gin.Context) {
+
+	userId, _ := strconv.Atoi(c.Param("userId"))
+	reqVO, _ := common.BindJSON[entity.SysUser](c)
+	resp.Ok(c, u.UserService.UpdateUser(userId, reqVO))
+}

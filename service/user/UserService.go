@@ -158,3 +158,16 @@ func (tis UserService) QueryUser(id int) *entity.SysUser {
 	config.DB.Where("user_id = ?", id).First(&sysUser)
 	return sysUser
 }
+
+func (tis UserService) UpdateUser(id int, sysUser *entity.SysUser) int {
+
+	tx := config.DB
+	tx = tx.Begin()
+
+	tx.Where("user_id = ?", id).Updates(&sysUser)
+	tis.RoleService.DelUserRole(tx, id)
+
+	tx.Commit()
+
+	return id
+}
