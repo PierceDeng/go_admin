@@ -14,13 +14,13 @@ func LoadRouter(noAuthGroup *gin.RouterGroup) {
 
 func LoadAuthRouter(authGroup *gin.RouterGroup) {
 
-	authGroup.GET("/getInfo", api.UserController.GetUserInfo)
-	authGroup.GET("/system/user/deptTree", api.UserController.GetDeptTree)
-	authGroup.GET("/system/user/list", api.UserController.GetUserList)
-	authGroup.PUT("/system/user/changeStatus", api.UserController.ChangeUserStatus)
-	authGroup.GET("/system/user/:userId", api.UserController.QueryUser)
-	authGroup.GET("/system/user/", api.UserController.QueryUser)
-	authGroup.PUT("/system/user", api.UserController.UpdateUser)
+	authGroup.GET("/getInfo", api.UserControl.GetUserInfo)
+	authGroup.GET("/system/user/deptTree", api.UserControl.GetDeptTree)
+	authGroup.GET("/system/user/list", api.UserControl.GetUserList)
+	authGroup.PUT("/system/user/changeStatus", api.UserControl.ChangeUserStatus)
+	authGroup.GET("/system/user/:userId", api.UserControl.QueryUser)
+	authGroup.GET("/system/user/", api.UserControl.QueryUser)
+	authGroup.PUT("/system/user", api.UserControl.UpdateUser)
 	authGroup.GET("/getRouters", api.AuthController.GetRouters)
 	authGroup.GET("/system/menu/list", api.MenuController.GetMenuList)
 	authGroup.GET("/system/menu/:id", api.MenuController.MenuInfo)
