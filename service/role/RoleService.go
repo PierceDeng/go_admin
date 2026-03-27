@@ -1,16 +1,16 @@
 package role
 
 import (
+	"context"
 	"go_admin/config"
 	"go_admin/middleware/common"
+	"go_admin/middleware/db"
 	"go_admin/middleware/exception"
 	"go_admin/model/entity"
 	roleRepository "go_admin/repository/role"
 	"go_admin/service/menu"
 	"go_admin/utils"
 	"strings"
-
-	"gorm.io/gorm"
 )
 
 const SUPER_ADMIN = "admin"
@@ -26,7 +26,7 @@ func NewRoleService() *RoleService {
 	}
 }
 
-func (r RoleService) GetRolePermission(user entity.SysUser) []string {
+func (r *RoleService) GetRolePermission(user entity.SysUser) []string {
 
 	var roles []string
 	if user.UserId == 1 {
@@ -38,7 +38,7 @@ func (r RoleService) GetRolePermission(user entity.SysUser) []string {
 	return roles
 }
 
-func (r RoleService) GetMenuPermission(user entity.SysUser) []string {
+func (r *RoleService) GetMenuPermission(user entity.SysUser) []string {
 
 	var permissions []string
 	if user.UserId == 1 {
@@ -70,10 +70,24 @@ func (r RoleService) GetMenuPermission(user entity.SysUser) []string {
 
 }
 
-func (r RoleService) DelUserRole(db *gorm.DB, id int) {
+func (r *RoleService) DelUserRole(ctx context.Context, id uint64) error {
 
-	db.Model(&entity.SysUserRole{}).Where("user_id = ?", id).Delete(&entity.SysUserRole{})
+	tx := db.GetDB(ctx, config.DB).Model(&entity.SysUserRole{}).Where("user_id = ?", id).Delete(&entity.SysUserRole{})
+	return tx.Error
+}
 
+func (r *RoleService) AddUserRole(ctx context.Context, id uint64, roleIds []int64) error {
+
+	var userRoles []*entity.SysUserRole
+	for _, roleId := range roleIds {
+		userRoles = append(userRoles, &entity.SysUserRole{
+			RoleId: roleId,
+			UserId: id,
+		})
+	}
+
+	tx := db.GetDB(ctx, config.DB).Model(&entity.SysUserRole{}).CreateInBatches(userRoles, len(userRoles))
+	return tx.Error
 }
 
 func selectRolePermissionByUserId(id uint64) []string {

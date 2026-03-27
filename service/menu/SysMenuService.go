@@ -18,7 +18,7 @@ func NewMenuService() *MenuService {
 	return &MenuService{}
 }
 
-func (tis MenuService) BuildMenus(menus []*entity.SysMenu) []*menu.RouterVO {
+func (tis *MenuService) BuildMenus(menus []*entity.SysMenu) []*menu.RouterVO {
 
 	var m []*menu.RouterVO
 	for _, item := range menus {
@@ -116,7 +116,7 @@ func isParentView(sysMenu entity.SysMenu) bool {
 	return sysMenu.ParentId != MENU_ROOT_ID && menuConst.TYPE_DIR == sysMenu.MenuType
 }
 
-func (tis MenuService) SelectMenuTreeByUserId(userId uint64) (menus []*entity.SysMenu) {
+func (tis *MenuService) SelectMenuTreeByUserId(userId uint64) (menus []*entity.SysMenu) {
 
 	if isAdmin(userId) {
 		menus = mRepository.SelectMenuTreeAll()
@@ -217,7 +217,7 @@ func innerLinkReplaceEach(path string) string {
 	return strings.ReplaceAll(path, "http|https|www", "")
 }
 
-func (tis MenuService) SelectMenuPermsByRoleId(roleId int64) []string {
+func (tis *MenuService) SelectMenuPermsByRoleId(roleId int64) []string {
 
 	menus := mRepository.SelectMenuPermsByRoleId(roleId)
 	menus = utils.UniqueStrings(menus)
@@ -231,7 +231,7 @@ func (tis MenuService) SelectMenuPermsByRoleId(roleId int64) []string {
 	return menusSet
 }
 
-func (tis MenuService) SelectMenuPermsByUserId(id uint64) []string {
+func (tis *MenuService) SelectMenuPermsByUserId(id uint64) []string {
 	perms := mRepository.SelectMenuPermsByUserId(id)
 	perms = utils.UniqueStrings(perms)
 
@@ -244,7 +244,7 @@ func (tis MenuService) SelectMenuPermsByUserId(id uint64) []string {
 	return permsSet
 }
 
-func (tis MenuService) SelectList(menu *entity.SysMenu, id uint64) []*entity.SysMenu {
+func (tis *MenuService) SelectList(menu *entity.SysMenu, id uint64) []*entity.SysMenu {
 
 	var menuList []*entity.SysMenu
 	if id == 1 {
@@ -255,13 +255,13 @@ func (tis MenuService) SelectList(menu *entity.SysMenu, id uint64) []*entity.Sys
 	return menuList
 }
 
-func (tis MenuService) MenuInfo(id int) (resp *entity.SysMenu) {
+func (tis *MenuService) MenuInfo(id int) (resp *entity.SysMenu) {
 
 	config.DB.Where("id = ?", id).Take(&resp)
 	return resp
 }
 
-func (tis MenuService) BuildMenuTree(list []*entity.SysMenu) []*menu.MenuTreeSelect {
+func (tis *MenuService) BuildMenuTree(list []*entity.SysMenu) []*menu.MenuTreeSelect {
 	trees := buildTree(list) // 先构建树
 	result := make([]*menu.MenuTreeSelect, 0, len(trees))
 	for _, root := range trees {
@@ -317,7 +317,7 @@ func toTreeSelect(sysMenu *entity.SysMenu) *menu.MenuTreeSelect {
 	return ts
 }
 
-func (tis MenuService) MenuDel(id int) int {
+func (tis *MenuService) MenuDel(id int) int {
 
 	config.DB.Where("menu_id = ?", id).Delete(&entity.SysMenu{})
 	return id

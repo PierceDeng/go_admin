@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/spf13/viper"
@@ -18,7 +19,7 @@ func InitDB() {
 		log.Fatal("failed to connect database:", err)
 	}
 	DB = db
-
+	fmt.Println("执行InitDB")
 }
 
 func CloseDB() {

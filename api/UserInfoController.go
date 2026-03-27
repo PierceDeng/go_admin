@@ -56,7 +56,6 @@ func (u userController) QueryUser(c *gin.Context) {
 
 func (u userController) UpdateUser(c *gin.Context) {
 
-	userId, _ := strconv.Atoi(c.Param("userId"))
-	reqVO, _ := common.BindJSON[entity.SysUser](c)
-	resp.Ok(c, u.UserService.UpdateUser(userId, reqVO))
+	reqVO, _ := common.BindJSON[user.UserEditReqVO](c)
+	resp.Ok(c, u.UserService.UpdateUser(c, reqVO))
 }
