@@ -21,11 +21,11 @@ var MenuController = &menuController{
 func (tis *menuController) GetMenuList(c *gin.Context) {
 
 	userId, _ := c.Get("userId")
-	menu, err := common.BindQuery[entity.SysMenu](c)
+	sysMenu, err := common.BindQuery[entity.SysMenu](c)
 	if err != nil {
 		return
 	}
-	menuList := tis.MenuService.SelectList(menu, userId.(uint64))
+	menuList := tis.MenuService.SelectList(sysMenu, userId.(uint64))
 	resp.Ok(c, menuList)
 }
 
@@ -36,11 +36,11 @@ func (tis *menuController) MenuInfo(c *gin.Context) {
 
 func (tis *menuController) MenuTreeSelect(c *gin.Context) {
 	userId, _ := c.Get("userId")
-	menu, err := common.BindJSON[entity.SysMenu](c)
+	sysMenu, err := common.BindJSON[entity.SysMenu](c)
 	if err != nil {
 		return
 	}
-	menuList := tis.MenuService.SelectList(menu, userId.(uint64))
+	menuList := tis.MenuService.SelectList(sysMenu, userId.(uint64))
 	resp.Ok(c, tis.MenuService.BuildMenuTree(menuList))
 }
 
