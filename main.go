@@ -5,6 +5,8 @@ import (
 	"go_admin/middleware/exception"
 	"log"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -27,6 +29,8 @@ func main() {
 	config.InitRedis()
 
 	r := gin.Default()
+	r.Use(cors.Default())
+	r.Use(requestid.New())
 	r.Use(exception.ExceptionHandler())
 
 	authGroup := r.Group("/", auth.AuthFilter())
