@@ -18,7 +18,15 @@ func (tis SysUserPostRepository) DelUserPost(ctx context.Context, userId uint64)
 	return db.GetDB(ctx, config.DB).Where("user_id = ?", userId).Delete(&entity.SysUserPost{}).Error
 }
 
+func (tis SysUserPostRepository) DelUserPostBatch(ctx context.Context, userIds []uint64) error {
+	return db.GetDB(ctx, config.DB).Where("user_id in ?", userIds).Delete(&entity.SysUserPost{}).Error
+}
+
 func (tis SysUserPostRepository) AddUserPost(ctx context.Context, userId uint64, postIds []int64) error {
+
+	if len(postIds) == 0 {
+		return nil
+	}
 
 	var userPostList []*entity.SysUserPost
 

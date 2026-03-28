@@ -76,8 +76,17 @@ func (r *RoleService) DelUserRole(ctx context.Context, id uint64) error {
 	return tx.Error
 }
 
+func (r *RoleService) DelUserRoleBatch(ctx context.Context, ids []uint64) error {
+
+	tx := db.GetDB(ctx, config.DB).Model(&entity.SysUserRole{}).Where("user_id in ?", ids).Delete(&entity.SysUserRole{})
+	return tx.Error
+}
+
 func (r *RoleService) AddUserRole(ctx context.Context, id uint64, roleIds []int64) error {
 
+	if len(roleIds) == 0 {
+		return nil
+	}
 	var userRoles []*entity.SysUserRole
 	for _, roleId := range roleIds {
 		userRoles = append(userRoles, &entity.SysUserRole{

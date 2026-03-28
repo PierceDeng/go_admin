@@ -20,6 +20,7 @@ import (
 	"go_admin/service/role"
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 )
@@ -147,7 +148,7 @@ func (u *UserService) toTreeSelect(sysDept *entity.SysDept) *menu.MenuTreeSelect
 func (u *UserService) GetUserList(vo *userReqVO.SysUserReqVO) resp.PageResp[entity.SysUser] {
 
 	var r resp.PageResp[entity.SysUser]
-	userList, total, _ := userRepository.QueryUserList(*vo)
+	userList, total, _ := userRepository.QueryUserList(vo)
 	r.Rows = userList
 	r.Total = total
 	r.Code = 200
@@ -234,4 +235,83 @@ func (tis *UserService) UpdateUser(ctx context.Context, reqVO *userReqVO.UserEdi
 	}
 
 	return userId
+}
+
+func (tis *UserService) AddUser(c *gin.Context, vo *userReqVO.UserEditReqVO) uint64 {
+
+	globalDB := config.DB
+	var userId uint64
+	_ = db.Transaction(c, globalDB, func(txCtx context.Context) error {
+
+		var sysUser = vo.SysUser
+		if err := db.GetDB(txCtx, globalDB).Create(&sysUser).Error; err != nil {
+			return err
+		}
+
+		userId = sysUser.UserId
+		if addUserRoleErr := tis.RoleService.AddUserRole(txCtx, userId, vo.RoleIds); addUserRoleErr != nil {
+			return addUserRoleErr
+		}
+
+		if addUserPostErr := tis.SysUserPostRepository.AddUserPost(txCtx, userId, vo.PostIds); addUserPostErr != nil {
+			return addUserPostErr
+		}
+
+		return nil
+	})
+
+	if userId == 0 {
+		panic(exception.NewBizException(common.BIZ_ERROR_CODE, "用户新增失败"))
+	}
+
+	return userId
+}
+
+func (tis *UserService) DeleteUser(c *gin.Context, id uint64) uint64 {
+
+	globalDB := config.DB
+	_ = db.Transaction(c, globalDB, func(txCtx context.Context) error {
+		db.GetDB(txCtx, globalDB).Where("user_id = ?", id).Delete(&entity.SysUser{})
+		_ = tis.RoleService.DelUserRole(txCtx, id)
+		_ = tis.SysUserPostRepository.DelUserPost(txCtx, id)
+		return nil
+	})
+
+	return id
+}
+
+func (tis *UserService) DeleteUserBatch(c *gin.Context, ids []uint64) bool {
+
+	if len(ids) == 0 {
+		panic(exception.NewBizException(common.BIZ_ERROR_CODE, "用户ID集合为空"))
+	}
+
+	globalDB := config.DB
+	_ = db.Transaction(c, globalDB, func(txCtx context.Context) error {
+		db.GetDB(txCtx, globalDB).Where("user_id in ?", ids).Delete(&entity.SysUser{})
+		_ = tis.RoleService.DelUserRoleBatch(txCtx, ids)
+		_ = tis.SysUserPostRepository.DelUserPostBatch(txCtx, ids)
+		return nil
+	})
+
+	return true
+}
+
+func (tis *UserService) ResetUserPwd(c *gin.Context, vo *userReqVO.ResetUserPwdReqVO) uint64 {
+
+	config.DB.Where("user_id = ?", vo.UserId).UpdateColumn("password", vo.Password)
+	return vo.UserId
+}
+
+func (tis *UserService) QueryUserListForExport(vo *userReqVO.SysUserReqVO) []*entity.SysUser {
+
+	userList, _, _ := userRepository.QueryUserList(vo)
+
+	return userList
+}
+
+func (tis *UserService) ImportUserTable(c *gin.Context, users []*entity.SysUser) bool {
+
+	config.DB.CreateInBatches(users, 100)
+	return true
 }
